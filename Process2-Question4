@@ -1,0 +1,148 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MEMBERS 5
+#define DAYS 7
+#define MAX_LEN 100
+
+// Member database
+char *milliways_members[MEMBERS] = {
+    "Jiyeon Park", "Ethan Smith", "Suphanan Wong", "Helena Silva", "Liam Wilson"
+};
+
+char *nicknames[MEMBERS] = {
+    "Jiyeon", "Ethan", "Suphanan", "Helena", "Liam"
+};
+
+// Meal/diet info
+char dietary_type[MEMBERS][MAX_LEN];
+char allergies[MEMBERS][MAX_LEN];
+char allowed_ingredients[MEMBERS][MAX_LEN];
+char weekly_meal_plan[MEMBERS][DAYS][MAX_LEN];
+int calories[MEMBERS][DAYS];
+
+// Function declarations
+void show_menu();
+void display_members();
+int get_member_index(const char *input);
+void setDietaryPreference();
+void viewWeeklyMealPlan();
+
+int main() {
+    char choice[10];
+
+    while (1) {
+        show_menu();
+        printf("Choose an option: ");
+        fgets(choice, sizeof(choice), stdin);
+
+        switch (choice[0]) {
+            case 'E':
+            case 'e':
+                setDietaryPreference();
+                break;
+            case 'F':
+            case 'f':
+                viewWeeklyMealPlan();
+                break;
+            case '0':
+                printf("Exiting program...\n");
+                return 0;
+            default:
+                printf("Invalid option.\n");
+        }
+    }
+
+    return 0;
+}
+
+void show_menu() {
+    printf("\n========= Diet & Meal Plan Menu =========\n");
+    printf("E. Set Dietary Preference\n");
+    printf("F. View Weekly Meal Plan\n");
+    printf("0. Exit\n");
+    printf("=========================================\n");
+}
+
+void display_members() {
+    printf("\n--- Milliways Members ---\n");
+    for (int i = 0; i < MEMBERS; i++) {
+        printf("%d. %s (%s)\n", i + 1, milliways_members[i], nicknames[i]);
+    }
+}
+
+int get_member_index(const char *input) {
+    for (int i = 0; i < MEMBERS; i++) {
+        if (strcmp(input, nicknames[i]) == 0 || strcmp(input, milliways_members[i]) == 0)
+            return i;
+    }
+    return -1;
+}
+
+void setDietaryPreference() {
+    char input[MAX_LEN];
+    const char *days[] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+
+    display_members();
+    printf("Enter nickname or full name of the member: ");
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = 0;
+
+    int idx = get_member_index(input);
+    if (idx == -1) {
+        printf("Member not found.\n");
+        return;
+    }
+
+    printf("Setting dietary preferences for %s (%s):\n", milliways_members[idx], nicknames[idx]);
+
+    printf("Enter dietary type (e.g., Vegan, Flexitarian): ");
+    fgets(dietary_type[idx], sizeof(dietary_type[idx]), stdin);
+    dietary_type[idx][strcspn(dietary_type[idx], "\n")] = 0;
+
+    printf("Enter any allergies (comma-separated): ");
+    fgets(allergies[idx], sizeof(allergies[idx]), stdin);
+    allergies[idx][strcspn(allergies[idx], "\n")] = 0;
+
+    printf("Enter allowed ingredients (comma-separated): ");
+    fgets(allowed_ingredients[idx], sizeof(allowed_ingredients[idx]), stdin);
+    allowed_ingredients[idx][strcspn(allowed_ingredients[idx], "\n")] = 0;
+
+    for (int d = 0; d < DAYS; d++) {
+        printf("%s Meal: ", days[d]);
+        fgets(weekly_meal_plan[idx][d], MAX_LEN, stdin);
+        weekly_meal_plan[idx][d][strcspn(weekly_meal_plan[idx][d], "\n")] = 0;
+
+        printf("%s Calories: ", days[d]);
+        scanf("%d", &calories[idx][d]);
+        getchar(); // consume newline
+    }
+
+    printf("Dietary preferences saved successfully for %s.\n", nicknames[idx]);
+}
+
+void viewWeeklyMealPlan() {
+    char input[MAX_LEN];
+    const char *days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+    display_members();
+    printf("Enter nickname or full name of the member to view meal plan: ");
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = 0;
+
+    int idx = get_member_index(input);
+    if (idx == -1) {
+        printf("Member not found.\n");
+        return;
+    }
+
+    printf("\n======== Weekly Meal Plan for %s (%s) ========\n", milliways_members[idx], nicknames[idx]);
+    printf("Diet Type: %s\n", dietary_type[idx]);
+    printf("Allergies: %s\n", allergies[idx]);
+    printf("Allowed Ingredients: %s\n", allowed_ingredients[idx]);
+    printf("-------------------------------------------------\n");
+    for (int i = 0; i < DAYS; i++) {
+        printf("%-10s: %s (%d kcal)\n", days[i], weekly_meal_plan[idx][i], calories[idx][i]);
+    }
+}

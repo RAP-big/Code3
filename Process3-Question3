@@ -1,0 +1,124 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define Arthur's Easter Egg structure
+typedef struct {
+    char keyword[8]; // "specter" + null terminator
+    char message[512];
+} ArthurEasterEgg;
+
+// Function Prototypes
+void find_easter_egg();
+void get_binary_reverse(char keyword[], char reversed[][9]);
+int isRightChar(char reversed[][9], char user_input[]);
+int isEasterEgg(char word[], const char *keyword);
+
+// Binary conversion helper
+void char_to_binary(char c, char binary[9]) {
+    for (int i = 7; i >= 0; i--) {
+        binary[7 - i] = ((c >> i) & 1) ? '1' : '0';
+    }
+    binary[8] = '\0';
+}
+
+// Main stub menu that mimics selection
+int main() {
+    char input[50];
+
+    while (1) {
+        printf("\n[II. Training > 2. Self-Management and Teamwork]\n");
+        printf("Enter name or command: ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = '\0'; // Trim newline
+
+        if (strcmp(input, "Arthur") == 0) {
+            find_easter_egg();
+        } else if (strcmp(input, "Q") == 0 || strcmp(input, "q") == 0) {
+            printf("Exiting...\n");
+            break;
+        } else {
+            printf("Unrecognized input. Try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+// Handle Easter Egg logic
+void find_easter_egg() {
+    ArthurEasterEgg egg = {
+        "specter",
+        "I confess. After graduating from university, I was blinded by the arrogance of starting a startup and recklessly blocked my friends' paths. "
+        "I painfully learned that when I am the only one convinced by my idea, it leads to disastrous results. "
+        "The past Arthur was a ghost of dogmatism and stubbornness."
+    };
+
+    char reversed_binary[7][9];
+    char user_input[8];
+    char final_word[10];
+
+    printf("\n<<Arthur's Easter Egg>>\n");
+
+    get_binary_reverse(egg.keyword, reversed_binary);
+
+    printf("Enter the character for each of the following reversed binary values:\n");
+
+    for (int i = 0; i < 7; i++) {
+        printf("Binary %d: %s => ", i + 1, reversed_binary[i]);
+        char ch;
+        scanf(" %c", &ch);
+        user_input[i] = ch;
+    }
+    user_input[7] = '\0';
+
+    // Clear buffer
+    while (getchar() != '\n');
+
+    if (!isRightChar(reversed_binary, user_input)) {
+        printf("Incorrect characters. Please try again.\n");
+        return;
+    }
+
+    printf("\nCombine the characters into the original word: ");
+    fgets(final_word, sizeof(final_word), stdin);
+    final_word[strcspn(final_word, "\n")] = '\0';
+
+    if (isEasterEgg(final_word, egg.keyword)) {
+        printf("##Easter Egg Discovered!$$\n%s\n", egg.message);
+    } else {
+        printf("Incorrect word. Returning to menu.\n");
+    }
+}
+
+// Convert keyword to binary and reverse bits for each character
+void get_binary_reverse(char keyword[], char reversed[][9]) {
+    char normal[9];
+
+    for (int i = 0; i < 7; i++) {
+        char_to_binary(keyword[i], normal);
+        for (int j = 0; j < 8; j++) {
+            reversed[i][j] = normal[7 - j]; // reverse bits
+        }
+        reversed[i][8] = '\0';
+    }
+}
+
+// Validate user entered correct characters
+int isRightChar(char reversed[][9], char user_input[]) {
+    for (int i = 0; i < 7; i++) {
+        char original = 0;
+        for (int j = 0; j < 8; j++) {
+            original = (original << 1) | (reversed[i][j] - '0');
+        }
+        if (user_input[i] != original) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Validate final word
+int isEasterEgg(char word[], const char *keyword) {
+    return strcmp(word, keyword) == 0;
+}

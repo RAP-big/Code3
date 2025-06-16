@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/* Function to simulate a 3-second delay using a loop (portable, ANSI C compliant) */
+void wait_seconds(int seconds)
+{
+    /* Approximate loop-based delay for systems without sleep() */
+    volatile long i;
+    long limit = seconds * 100000000L; /* Adjust this depending on system speed */
+    for (i = 0; i < limit; i++)
+    {
+        /* Do nothing */
+    }
+}
+
+/* Function to print a left-side right-angled triangle */
+void print_left_triangle(int height)
+{
+    int i, j;
+    for (i = 1; i <= height; i++)
+    {
+        for (j = 1; j <= i; j++)
+        {
+            printf("*");
+        }
+        printf("\n");
+    }
+}
+
+/* Function to print a right-side inverted triangle */
+void print_right_triangle(int height)
+{
+    int i, j;
+    for (i = height; i >= 1; i--)
+    {
+        for (j = 1; j < height - i + 1; j++)
+        {
+            printf(" ");
+        }
+        for (j = 1; j <= i; j++)
+        {
+            printf("*");
+        }
+        printf("\n");
+    }
+}
+
+int main(void)
+{
+    char name[100];
+    char date[20];
+
+    /* Prompt for user input */
+    printf("[Please enter the current date in the \"yyyy-mm-dd\" format]: ");
+    scanf("%19s", date);
+
+    printf("[Please enter your name]: ");
+    scanf("%99s", name); /* If name has spaces, use fgets() instead */
+
+    printf("**The input has been processed successfully.**\n");
+
+    /* Wait and clear screen (simulate) */
+    wait_seconds(3);
+
+    /* Simulate clear screen by printing newlines */
+    int i;
+    for (i = 0; i < 50; i++)
+    {
+        printf("\n");
+    }
+
+    /* Splash screen with centered message */
+    printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
+
+    printf("                                            [Magrathea ver 0.1]                              \n");
+    printf("           Magrathea, where a shining planet is created in a wasteland with no grass,         \n");
+    printf("   a place where unseen potential is discovered and gems are polished by the hands of experts, \n");
+    printf("                                            Welcome to Magrathea.                              \n");
+
+    printf("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+
+    printf("[User]: %s\t\t\t\t\t   [Execution Time]: %s\n", name, date);
+
+    printf("=============================================================================================================\n");
+
+    /* Bonus: Decorative triangles */
+    printf("\nLeft Triangle:\n");
+    print_left_triangle(5);
+
+    printf("\nRight Inverted Triangle:\n");
+    print_right_triangle(5);
+
+    return 0;
+}

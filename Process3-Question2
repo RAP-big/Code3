@@ -1,0 +1,168 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_MEMBERS 10
+#define MAX_COUNSELORS 8
+#define MAX_TRAUMA_DESC 200
+#define MAX_RESPONSE_LEN 100
+#define NUM_QUESTIONS 5
+
+// Structure to store member trauma information
+struct MemberTrauma {
+    char nickname[50];
+    int age;
+    char traumaDesc[MAX_TRAUMA_DESC];
+};
+
+// Structure to store counseling questions
+struct CounselingQuestion {
+    int id;
+    char content[MAX_TRAUMA_DESC];
+};
+
+// Structure to store counseling session responses
+struct CounselingSession {
+    char nickname[50];
+    struct CounselingQuestion question;
+    char response[MAX_RESPONSE_LEN];
+};
+
+// Global arrays to store data
+struct MemberTrauma memberTraumaList[MAX_MEMBERS];
+struct CounselingQuestion counselingQuestions[NUM_QUESTIONS] = {
+    {1, "In what situations have you experienced this trauma?"},
+    {2, "How has this situation affected your daily life and emotions?"},
+    {3, "How have you tried to overcome this trauma?"},
+    {4, "What emotions do you associate with this trauma?"},
+    {5, "What kind of support do you think is necessary to overcome this trauma?"}
+};
+struct CounselingSession counselingSessions[MAX_MEMBERS];
+
+// Function to initialize random number generator
+void initRandom() {
+    srand(time(NULL));
+}
+
+// Function to input trauma information for a member
+void inputTraumaData() {
+    char nickname[50];
+    int found = 0;
+
+    printf("Enter member's nickname: ");
+    scanf("%s", nickname);
+
+    // Check if member exists
+    for (int i = 0; i < MAX_MEMBERS; i++) {
+        if (strcmp(memberTraumaList[i].nickname, nickname) == 0) {
+            found = 1;
+            printf("Enter trauma description: ");
+            getchar(); // To consume the newline character
+            fgets(memberTraumaList[i].traumaDesc, MAX_TRAUMA_DESC, stdin);
+            memberTraumaList[i].traumaDesc[strcspn(memberTraumaList[i].traumaDesc, "\n")] = '\0'; // Remove newline character
+            printf("Trauma data updated for %s.\n", nickname);
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("Member not found.\n");
+    }
+}
+
+// Function to input counseling session responses
+void inputCounselingSession() {
+    char nickname[50];
+    int found = 0;
+
+    printf("Enter member's nickname: ");
+    scanf("%s", nickname);
+
+    // Check if member has trauma data
+    for (int i = 0; i < MAX_MEMBERS; i++) {
+        if (strcmp(memberTraumaList[i].nickname, nickname) == 0 && strlen(memberTraumaList[i].traumaDesc) > 0) {
+            found = 1;
+            printf("Starting counseling session for %s:\n", nickname);
+
+            // Ask 3 random questions
+            for (int j = 0; j < 3; j++) {
+                int qIndex = rand() % NUM_QUESTIONS;
+                struct CounselingQuestion question = counselingQuestions[qIndex];
+
+                printf("Question %d: %s\n", question.id, question.content);
+                printf("Response: ");
+                getchar(); // To consume the newline character
+                fgets(counselingSessions[i].response, MAX_RESPONSE_LEN, stdin);
+                counselingSessions[i].response[strcspn(counselingSessions[i].response, "\n")] = '\0'; // Remove newline character
+
+                // Store the response
+                strcpy(counselingSessions[i].nickname, nickname);
+                counselingSessions[i].question = question;
+
+                printf("Response recorded.\n");
+            }
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("No trauma data found for member %s.\n", nickname);
+    }
+}
+
+// Function to display counseling session responses
+void displayCounselingSessions() {
+    printf("Counseling Sessions:\n");
+
+    for (int i = 0; i < MAX_MEMBERS; i++) {
+        if (strlen(counselingSessions[i].nickname) > 0) {
+            printf("Nickname: %s\n", counselingSessions[i].nickname);
+            printf("Trauma: %s\n", memberTraumaList[i].traumaDesc);
+            printf("Question: %s\n", counselingSessions[i].question.content);
+            printf("Response: %s\n\n", counselingSessions[i].response);
+        }
+    }
+}
+
+int main() {
+    // Initialize member trauma data
+    strcpy(memberTraumaList[0].nickname, "Alice");
+    memberTraumaList[0].age = 20;
+    strcpy(memberTraumaList[1].nickname, "Bob");
+    memberTraumaList[1].age = 22;
+    // Add more members as needed
+
+    // Initialize random number generator
+    initRandom();
+
+    int choice;
+    do {
+        printf("\nMenu:\n");
+        printf("1. Input Trauma Data\n");
+        printf("2. Input Counseling Session\n");
+        printf("3. Display Counseling Sessions\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                inputTraumaData();
+                break;
+            case 2:
+                inputCounselingSession();
+                break;
+            case 3:
+                displayCounselingSessions();
+                break;
+            case 4:
+                printf("Exiting program.\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}

@@ -1,0 +1,123 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_NAME_LEN 100
+#define MAX_DETAIL_LEN 1000
+#define SUBJECT_COUNT 7
+
+typedef struct Subjects {
+    char name[MAX_NAME_LEN];
+    char details[MAX_DETAIL_LEN];
+    struct Subjects* next;
+} Subject;
+
+// Function declarations
+Subject* createSubjectList();
+void LoadContentFile(Subject* head);
+void UpdateSubjectInfo(Subject* head, const char* line);
+void PrintSubjectList(Subject* head);
+void freeList(Subject* head);
+
+// List of subject names in order
+const char* subjectNames[SUBJECT_COUNT] = {
+    "Acting Theory",
+    "Stage Theory",
+    "Script Analysis",
+    "Dialogue Interpretation and Emotional Expression",
+    "Character Development",
+    "Storytelling Theory",
+    "Stage Movement and Poses"
+};
+
+int main() {
+    Subject* head = createSubjectList();
+    LoadContentFile(head);
+    PrintSubjectList(head);
+    freeList(head);
+    return 0;
+}
+
+// Create and link all subjects in order
+Subject* createSubjectList() {
+    Subject* head = NULL;
+    Subject* prev = NULL;
+
+    for (int i = 0; i < SUBJECT_COUNT; i++) {
+        Subject* newNode = (Subject*)malloc(sizeof(Subject));
+        if (!newNode) {
+            perror("Memory allocation failed");
+            exit(1);
+        }
+        strncpy(newNode->name, subjectNames[i], MAX_NAME_LEN);
+        newNode->details[0] = '\0';
+        newNode->next = NULL;
+
+        if (prev) {
+            prev->next = newNode;
+        } else {
+            head = newNode;
+        }
+        prev = newNode;
+    }
+
+    return head;
+}
+
+// Read from perform_stage.txt and update subjects
+void LoadContentFile(Subject* head) {
+    FILE* file = fopen("perform_stage.txt", "r");
+    if (!file) {
+        perror("Error opening perform_stage.txt");
+        exit(1);
+    }
+
+    char line[1024];
+    while (fgets(line, sizeof(line), file)) {
+        UpdateSubjectInfo(head, line);
+    }
+
+    fclose(file);
+}
+
+// Update subject info based on matched subject name in line
+void UpdateSubjectInfo(Subject* head, const char* line) {
+    Subject* current = head;
+    while (current) {
+        if (strstr(line, current->name)) {
+            strncpy(current->details, line + strlen(current->name) + 1, MAX_DETAIL_LEN);
+            break;
+        }
+        current = current->next;
+    }
+}
+
+// Print subject list with formatted output
+void PrintSubjectList(Subject* head) {
+    Subject* current = head;
+    int index = 1;
+
+    while (current) {
+        printf("%d. %s\n", index++, current->name);
+
+        // Print details: each sentence (after '.') starts on new line
+        char* token = strtok(current->details, ".");
+        while (token) {
+            printf("   %s.\n", token);
+            token = strtok(NULL, ".");
+        }
+
+        current = current->next;
+        printf("\n");
+    }
+}
+
+// Free linked list memory
+void freeList(Subject* head) {
+    Subject* temp;
+    while (head) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}

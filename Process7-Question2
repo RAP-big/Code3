@@ -1,0 +1,174 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_GROUPS 100
+#define MAX_NAME_LEN 50
+#define MAX_CONCEPT_LEN 100
+
+// Structure to hold group concept data
+typedef struct {
+    char group[MAX_NAME_LEN];
+    char concept[MAX_CONCEPT_LEN];
+    char description[MAX_CONCEPT_LEN];
+} GroupConcept;
+
+// Structure for Queue
+typedef struct {
+    GroupConcept *data[MAX_GROUPS];
+    int front, rear;
+} Queue;
+
+// Structure for Stack
+typedef struct {
+    GroupConcept *data[MAX_GROUPS];
+    int top;
+} Stack;
+
+// Function prototypes
+void readConceptData(GroupConcept concepts[], int *count);
+void shuffleData(GroupConcept concepts[], int count);
+void enqueue(Queue *q, GroupConcept *gc);
+GroupConcept* dequeue(Queue *q);
+void push(Stack *s, GroupConcept *gc);
+GroupConcept* pop(Stack *s);
+void matchConcepts(GroupConcept concepts[], int count, int useQueue);
+
+int main() {
+    GroupConcept concepts[MAX_GROUPS];
+    int count = 0;
+    int useQueue;
+
+    // Read concept data from file
+    readConceptData(concepts, &count);
+
+    if (count == 0) {
+        printf("No concept data available.\n");
+        return 1;
+    }
+
+    printf("Select data structure:\n1. Queue\n2. Stack\nChoice: ");
+    scanf("%d", &useQueue);
+    getchar(); // Consume newline character
+
+    matchConcepts(concepts, count, useQueue);
+
+    return 0;
+}
+
+void readConceptData(GroupConcept concepts[], int *count) {
+    FILE *file = fopen("concept.txt", "r");
+    if (!file) {
+        printf("Failed to open concept.txt\n");
+        return;
+    }
+
+    while (fscanf(file, "%49[^\n]%*c%99[^\n]%*c%99[^\n]%*c", concepts[*count].group,
+                   concepts[*count].concept, concepts[*count].description) == 3) {
+        (*count)++;
+        if (*count >= MAX_GROUPS) break;
+    }
+
+    fclose(file);
+}
+
+void shuffleData(GroupConcept concepts[], int count) {
+    srand(time(NULL));
+    for (int i = 0; i < count; i++) {
+        int j = rand() % count;
+        GroupConcept temp = concepts[i];
+        concepts[i] = concepts[j];
+        concepts[j] = temp;
+    }
+}
+
+void enqueue(Queue *q, GroupConcept *gc) {
+    if (q->rear < MAX_GROUPS - 1) {
+        q->data[++(q->rear)] = gc;
+    }
+}
+
+GroupConcept* dequeue(Queue *q) {
+    if (q->front <= q->rear) {
+        return q->data[(q->front)++];
+    }
+    return NULL;
+}
+
+void push(Stack *s, GroupConcept *gc) {
+    if (s->top < MAX_GROUPS - 1) {
+        s->data[++(s->top)] = gc;
+    }
+}
+
+GroupConcept* pop(Stack *s) {
+    if (s->top >= 0) {
+        return s->data[(s->top)--];
+    }
+    return NULL;
+}
+
+void matchConcepts(GroupConcept concepts[], int count, int useQueue) {
+    Queue groupQueue = { .front = 0, .rear = -1 };
+    Queue conceptQueue = { .front = 0, .rear = -1 };
+    Stack groupStack = { .top = -1 };
+    Stack conceptStack = { .top = -1 };
+    int numSets, correct = 0, incorrect = 0;
+    clock_t start, end;
+
+    printf("Enter the number of concept sets to extract: ");
+    scanf("%d", &numSets);
+    getchar(); // Consume newline character
+
+    if (numSets > count) {
+        printf("Not enough data available.\n");
+        return;
+    }
+
+    shuffleData(concepts, count);
+
+    for (int i = 0; i < numSets; i++) {
+        if (useQueue) {
+            enqueue(&groupQueue, &concepts[i]);
+            enqueue(&conceptQueue, &concepts[i]);
+        } else {
+            push(&groupStack, &concepts[i]);
+            push(&conceptStack, &concepts[i]);
+        }
+    }
+
+    printf("\n## Mismatched Group and Concept ##\n");
+    printf("1. Group Queue: 2. Concept Queue\n");
+    printf("--------------------\n");
+
+    for (int i = 0; i < numSets; i++) {
+        GroupConcept *group = useQueue ? dequeue(&groupQueue) : pop(&groupStack);
+        GroupConcept *concept = useQueue ? dequeue(&conceptQueue) : pop(&conceptStack);
+        printf("%s: %s\n", group->group, concept->concept);
+    }
+
+    start = clock();
+
+    for (int i = 0; i < numSets; i++) {
+        char groupName[MAX_NAME_LEN];
+        printf("\nEnter group name for concept %d: ", i + 1);
+        fgets(groupName, MAX_NAME_LEN, stdin);
+        groupName[strcspn(groupName, "\n")] = '\0';
+
+        GroupConcept *group = useQueue ? dequeue(&groupQueue) : pop(&groupStack);
+        if (strcmp(group->group, groupName) == 0) {
+            printf("Correct!\n");
+            correct++;
+        } else {
+            printf("Incorrect! The correct answer is: %s\n", group->group);
+            incorrect++;
+        }
+    }
+
+    end = clock();
+    double timeTaken = ((double)(end - start)) / CLOCKS_PER_SEC;
+    printf("\nTime taken: %.2f seconds\n", timeTaken);
+    printf("Correct answers: %d\n", correct);
+    printf("Incorrect answers: %d\n", incorrect);
+}

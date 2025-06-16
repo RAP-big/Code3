@@ -1,0 +1,162 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MEMBERS 5
+#define TESTS 7
+#define MAX_LEN 50
+
+// Member name and nickname arrays
+char *milliways_members[MEMBERS] = {
+    "Jiyeon Park",
+    "Ethan Smith",
+    "Suphanan Wong",
+    "Helena Silva",
+    "Liam Wilson"
+};
+
+char *nicknames[MEMBERS] = {
+    "Jiyeon",
+    "Ethan",
+    "Suphanan",
+    "Helena",
+    "Liam"
+};
+
+// Health data: first column stores nickname, rest store fitness test scores
+char health_scores[MEMBERS][TESTS + 1][MAX_LEN];
+
+// Function declarations
+void setHealth();
+void getHealth();
+void parse_fitness_data(char *input, int member_index);
+
+int main() {
+    char choice[10];
+
+    while (1) {
+        printf("\n========== Milliways Training Menu ==========\n");
+        printf("1. Enter Fitness Data (Physical Strength & Knowledge)\n");
+        printf("2. View Fitness Data\n");
+        printf("0. Exit\n");
+        printf("=============================================\n");
+        printf("Select option: ");
+        fgets(choice, sizeof(choice), stdin);
+
+        if (choice[0] == '0') break;
+        else if (choice[0] == '1') setHealth();
+        else if (choice[0] == '2') getHealth();
+        else printf("Invalid choice. Try again.\n");
+    }
+
+    return 0;
+}
+
+void setHealth() {
+    char input[256];
+
+    printf("\n--- Enter Fitness Data ---\n");
+    printf("Seven categories: 1-Mile Run, Sprint, Push-ups, Squats, Arm Strength, Swimming, Weightlifting\n");
+    for (int i = 0; i < MEMBERS; i++) {
+        printf("\nEnter 7 fitness values for %s (%s), comma-separated:\n", milliways_members[i], nicknames[i]);
+        fgets(input, sizeof(input), stdin);
+        parse_fitness_data(input, i);
+    }
+
+    printf("\nFitness data entry complete.\n");
+}
+
+void parse_fitness_data(char *input, int member_index) {
+    char *token;
+    int test_index = 0;
+
+    // First, store nickname in column 0
+    strcpy(health_scores[member_index][0], nicknames[member_index]);
+
+    token = strtok(input, ",");
+    while (token != NULL && test_index < TESTS) {
+        strncpy(health_scores[member_index][test_index + 1], token, MAX_LEN - 1);
+        health_scores[member_index][test_index + 1][MAX_LEN - 1] = '\0'; // Null-terminate
+        token = strtok(NULL, ",");
+        test_index++;
+    }
+
+    // Fill remaining with "-"
+    while (test_index < TESTS) {
+        strcpy(health_scores[member_index][test_index + 1], "-");
+        test_index++;
+    }
+}
+
+void getHealth() {
+    char input[50];
+    int option;
+
+    printf("\n--- View Fitness Data ---\n");
+    printf("1. View all members' data\n");
+    printf("2. View one member's all data\n");
+    printf("3. View one specific test result for a member\n");
+    printf("Select option: ");
+    fgets(input, sizeof(input), stdin);
+    option = atoi(input);
+
+    if (option == 1) {
+        printf("\n%-10s | %-8s %-8s %-8s %-8s %-8s %-8s %-8s\n", 
+            "Name", "Run", "Sprint", "PushUp", "Squats", "ArmStr", "Swim", "Lift");
+        printf("-------------------------------------------------------------------\n");
+        for (int i = 0; i < MEMBERS; i++) {
+            printf("%-10s |", health_scores[i][0]);
+            for (int j = 1; j <= TESTS; j++) {
+                printf(" %-8s", health_scores[i][j]);
+            }
+            printf("\n");
+        }
+    } else if (option == 2) {
+        printf("Enter nickname: ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        for (int i = 0; i < MEMBERS; i++) {
+            if (strcmp(input, health_scores[i][0]) == 0) {
+                printf("%s's Fitness Data:\n", health_scores[i][0]);
+                for (int j = 1; j <= TESTS; j++) {
+                    printf("Test %d: %s\n", j, health_scores[i][j]);
+                }
+                return;
+            }
+        }
+        printf("Member not found.\n");
+
+    } else if (option == 3) {
+        printf("Enter nickname: ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        int member_index = -1;
+        for (int i = 0; i < MEMBERS; i++) {
+            if (strcmp(input, health_scores[i][0]) == 0) {
+                member_index = i;
+                break;
+            }
+        }
+
+        if (member_index == -1) {
+            printf("Member not found.\n");
+            return;
+        }
+
+        printf("Enter test number (1-7): ");
+        fgets(input, sizeof(input), stdin);
+        int test_index = atoi(input);
+
+        if (test_index < 1 || test_index > 7) {
+            printf("Invalid test number.\n");
+            return;
+        }
+
+        printf("%s's result for test %d: %s\n", health_scores[member_index][0], test_index, health_scores[member_index][test_index]);
+
+    } else {
+        printf("Invalid option.\n");
+    }
+}

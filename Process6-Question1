@@ -1,0 +1,173 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_DANCES 6
+#define MAX_STEPS 10
+#define MAX_MEMBERS 5
+#define MAX_LEN 100
+
+typedef struct {
+    char korName[MAX_LEN];
+    char engName[MAX_LEN];
+    char steps[MAX_STEPS][MAX_LEN];
+    int stepCount;
+} Dance;
+
+typedef struct {
+    char name[MAX_LEN];
+    char nickname[MAX_LEN];
+    int danceScore;
+} Member;
+
+Dance dances[MAX_DANCES];
+Member members[MAX_MEMBERS] = {
+    {"Arthur Park", "arthur", 0},
+    {"Jin Lee", "jin", 0},
+    {"Luna Kim", "luna", 0},
+    {"Kai Song", "kai", 0},
+    {"Soojin Han", "soojin", 0}
+};
+
+void shuffleSteps(char steps[][MAX_LEN], int count) {
+    for (int i = count - 1; i > 0; --i) {
+        int j = rand() % (i + 1);
+        char temp[MAX_LEN];
+        strcpy(temp, steps[i]);
+        strcpy(steps[i], steps[j]);
+        strcpy(steps[j], temp);
+    }
+}
+
+void loadDanceData() {
+    FILE* file = fopen("dance_step.txt", "r");
+    if (!file) {
+        perror("Cannot open dance_step.txt");
+        exit(1);
+    }
+
+    char line[1024];
+    int idx = 0;
+    while (fgets(line, sizeof(line), file) && idx < MAX_DANCES) {
+        line[strcspn(line, "\n")] = 0;
+
+        char* token = strtok(line, "|");
+        if (!token) continue;
+        strcpy(dances[idx].korName, token);
+
+        token = strtok(NULL, "|");
+        if (!token) continue;
+        strcpy(dances[idx].engName, token);
+
+        token = strtok(NULL, "|");
+        if (!token) continue;
+
+        char* step = strtok(token, ",");
+        int stepIdx = 0;
+        while (step && stepIdx < MAX_STEPS) {
+            strcpy(dances[idx].steps[stepIdx++], step);
+            step = strtok(NULL, ",");
+        }
+        dances[idx].stepCount = stepIdx;
+        idx++;
+    }
+
+    fclose(file);
+}
+
+int evaluateSteps(char correct[][MAX_LEN], char input[][MAX_LEN], int count) {
+    int correctOrder = 1;
+    int correctSteps = 0;
+    int matched[MAX_STEPS] = {0};
+
+    for (int i = 0; i < count; i++) {
+        if (strcmp(correct[i], input[i]) != 0) {
+            correctOrder = 0;
+        }
+    }
+
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < count; j++) {
+            if (!matched[j] && strcmp(correct[i], input[j]) == 0) {
+                correctSteps++;
+                matched[j] = 1;
+                break;
+            }
+        }
+    }
+
+    if (correctOrder && correctSteps == count)
+        return 100;
+    else if (correctSteps == count)
+        return 50;
+    else if (correctSteps > 0)
+        return 20;
+    else
+        return 0;
+}
+
+void learnDanceStep() {
+    char nickname[MAX_LEN];
+    Member* learner = NULL;
+
+    for (int tries = 0; tries < 3; tries++) {
+        printf("Enter your nickname: ");
+        fgets(nickname, sizeof(nickname), stdin);
+        nickname[strcspn(nickname, "\n")] = 0;
+
+        for (int i = 0; i < MAX_MEMBERS; i++) {
+            if (strcmp(members[i].nickname, nickname) == 0) {
+                learner = &members[i];
+                break;
+            }
+        }
+
+        if (learner) break;
+        printf("Nickname not found. Try again.\n");
+    }
+
+    if (!learner) {
+        printf("Too many failed attempts. Returning to main menu.\n");
+        return;
+    }
+
+    loadDanceData();
+
+    srand(time(NULL));
+    int danceIdx = rand() % MAX_DANCES;
+    Dance* dance = &dances[danceIdx];
+
+    char shuffled[MAX_STEPS][MAX_LEN];
+    int stepCount = dance->stepCount;
+
+    for (int i = 0; i < stepCount; i++) {
+        strcpy(shuffled[i], dance->steps[i]);
+    }
+    shuffleSteps(shuffled, stepCount);
+
+    printf("\n[Dance Quiz]\n");
+    printf("Dance: %s (%s)\n", dance->korName, dance->engName);
+    printf("Shuffled steps:\n");
+    for (int i = 0; i < stepCount; i++) {
+        printf("%s ", shuffled[i]);
+    }
+    printf("\nEnter the correct sequence (comma-separated):\n> ");
+
+    char inputLine[512];
+    fgets(inputLine, sizeof(inputLine), stdin);
+    inputLine[strcspn(inputLine, "\n")] = 0;
+
+    char userSteps[MAX_STEPS][MAX_LEN];
+    char* token = strtok(inputLine, ",");
+    int i = 0;
+    while (token && i < MAX_STEPS) {
+        while (*token == ' ') token++; // Trim leading spaces
+        strcpy(userSteps[i++], token);
+        token = strtok(NULL, ",");
+    }
+
+    int score = evaluateSteps(dance->steps, userSteps, stepCount);
+    learner->danceScore += score;
+
+    printf("\n✅ C

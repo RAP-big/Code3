@@ -1,0 +1,100 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_NAME_LEN 50
+#define MAX_FEEDBACK_LEN 51
+
+typedef enum { MALE, FEMALE } Gender;
+
+typedef struct {
+    char name[MAX_NAME_LEN];
+    Gender gender;
+    float frequency;
+    float amplitude;
+    float jitter;
+} VoiceProfile;
+
+void (*guessFunctions[3])(VoiceProfile*);
+
+void generateRandomVoiceProfile(VoiceProfile* profile) {
+    srand(time(NULL));
+    if (profile->gender == MALE) {
+        profile->frequency = (rand() % (180 - 85 + 1)) + 85;
+        profile->amplitude = (rand() % (36 - 25 + 1)) + 25;
+        profile->jitter = (rand() % (6 - 2 + 1)) + 2;
+    } else {
+        profile->frequency = (rand() % (255 - 165 + 1)) + 165;
+        profile->amplitude = (rand() % (47 - 35 + 1)) + 35;
+        profile->jitter = (rand() % (10 - 3 + 1)) + 3;
+    }
+}
+
+void guessFrequency(VoiceProfile* profile) {
+    float guess;
+    printf("Guess the frequency (%.2f Hz): ", profile->frequency);
+    scanf("%f", &guess);
+    if (guess == profile->frequency) {
+        printf("Correct! The frequency is %.2f Hz.\n", profile->frequency);
+    } else {
+        printf("Incorrect. Try again.\n");
+    }
+}
+
+void guessAmplitude(VoiceProfile* profile) {
+    float guess;
+    printf("Guess the amplitude (%.2f dB): ", profile->amplitude);
+    scanf("%f", &guess);
+    if (guess == profile->amplitude) {
+        printf("Correct! The amplitude is %.2f dB.\n", profile->amplitude);
+    } else {
+        printf("Incorrect. Try again.\n");
+    }
+}
+
+void guessJitter(VoiceProfile* profile) {
+    float guess;
+    printf("Guess the jitter (%.2f%%): ", profile->jitter);
+    scanf("%f", &guess);
+    if (guess == profile->jitter) {
+        printf("Correct! The jitter is %.2f%%.\n", profile->jitter);
+    } else {
+        printf("Incorrect. Try again.\n");
+    }
+}
+
+void findMyVoice() {
+    VoiceProfile trainee;
+    printf("Enter your name: ");
+    fgets(trainee.name, MAX_NAME_LEN, stdin);
+    trainee.name[strcspn(trainee.name, "\n")] = '\0'; // Remove newline character
+
+    char genderInput;
+    printf("Enter your gender (M/F): ");
+    scanf(" %c", &genderInput);
+    if (genderInput == 'M' || genderInput == 'm') {
+        trainee.gender = MALE;
+    } else if (genderInput == 'F' || genderInput == 'f') {
+        trainee.gender = FEMALE;
+    } else {
+        printf("Invalid gender input.\n");
+        return;
+    }
+
+    generateRandomVoiceProfile(&trainee);
+
+    printf("Let's find your voice!\n");
+
+    guessFunctions[0] = guessFrequency;
+    guessFunctions[1] = guessAmplitude;
+    guessFunctions[2] = guessJitter;
+
+    for (int i = 0; i < 3; i++) {
+        guessFunctions[i](&trainee);
+    }
+}
+
+int main() {
+    findMyVoice();
+    return 0;
+}

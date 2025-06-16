@@ -1,0 +1,95 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_TRAINEES 8
+#define MAX_MENTORS 8
+#define MAX_NAME_LENGTH 50
+
+// Structure to store trainee information
+typedef struct {
+    char name[MAX_NAME_LENGTH];
+    char nickname[MAX_NAME_LENGTH];
+    int ability;
+} Trainee;
+
+// Structure to store mentor information
+typedef struct {
+    int id;
+    char name[MAX_NAME_LENGTH];
+    int mentee_id;
+} Mentor;
+
+// Global arrays to store trainees and mentors
+Trainee trainees[MAX_TRAINEES];
+Mentor mentors[MAX_MENTORS];
+
+// Function to parse trainee data and assign abilities
+void parseTraineeData() {
+    for (int i = 0; i < MAX_TRAINEES; i++) {
+        printf("Enter name for trainee %d: ", i + 1);
+        fgets(trainees[i].name, MAX_NAME_LENGTH, stdin);
+        trainees[i].name[strcspn(trainees[i].name, "\n")] = '\0'; // Remove newline character
+
+        printf("Enter nickname for trainee %d: ", i + 1);
+        fgets(trainees[i].nickname, MAX_NAME_LENGTH, stdin);
+        trainees[i].nickname[strcspn(trainees[i].nickname, "\n")] = '\0'; // Remove newline character
+
+        // Assign ability based on the sum of ASCII values of the nickname
+        trainees[i].ability = 0;
+        for (int j = 0; trainees[i].nickname[j] != '\0'; j++) {
+            trainees[i].ability += trainees[i].nickname[j];
+        }
+    }
+}
+
+// Function to assign random abilities to trainees
+void assignRandomAbilities() {
+    srand(time(NULL));
+    for (int i = 0; i < MAX_TRAINEES; i++) {
+        trainees[i].ability = rand() % 901 + 100; // Random ability between 100 and 1000
+    }
+}
+
+// Function to initialize mentor list
+void initializeMentors() {
+    for (int i = 0; i < MAX_MENTORS; i++) {
+        mentors[i].id = i + 1;
+        snprintf(mentors[i].name, MAX_NAME_LENGTH, "Mentor %d", i + 1);
+        mentors[i].mentee_id = -1; // No mentee assigned yet
+    }
+}
+
+// Function to match mentors to trainees
+void matchMentoring() {
+    for (int i = 0; i < MAX_TRAINEES; i++) {
+        int mentor_id = i % MAX_MENTORS; // Mentor ID based on modulo of trainee index
+        mentors[mentor_id].mentee_id = i;
+    }
+}
+
+// Function to display mentor-mentee assignments
+void displayAssignments() {
+    printf("\nMentor-Mentee Assignments:\n");
+    for (int i = 0; i < MAX_MENTORS; i++) {
+        if (mentors[i].mentee_id != -1) {
+            printf("Mentor %d (%s) is assigned to Trainee %d (%s)\n",
+                   mentors[i].id,
+                   mentors[i].name,
+                   mentors[i].mentee_id + 1,
+                   trainees[mentors[i].mentee_id].name);
+        } else {
+            printf("Mentor %d (%s) has no mentee assigned.\n", mentors[i].id, mentors[i].name);
+        }
+    }
+}
+
+int main() {
+    parseTraineeData();
+    assignRandomAbilities();
+    initializeMentors();
+    matchMentoring();
+    displayAssignments();
+    return 0;
+}

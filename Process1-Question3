@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 6
+#define STR_LEN 100
+
+int main(void)
+{
+    char group_name[STR_LEN];
+    char ch;
+    int i = 0;
+
+    // One-dimensional arrays for each candidate
+    char candidate01[11][STR_LEN];
+    char candidate02[11][STR_LEN];
+    char candidate03[11][STR_LEN];
+    char candidate04[11][STR_LEN];
+    char candidate05[11][STR_LEN];
+    char candidate06[11][STR_LEN];
+
+    // Pointer array to access each candidate
+    char (*member_info[MAX])[STR_LEN] = {
+        candidate01, candidate02, candidate03,
+        candidate04, candidate05, candidate06
+    };
+
+    // Ask for group name (bonus)
+    printf("Enter audition group name: ");
+    int j = 0;
+    while ((ch = getchar()) != '\n' && j < STR_LEN - 1)
+    {
+        group_name[j++] = ch;
+    }
+    group_name[j] = '\0'; // Null-terminate
+
+    // Data input using while loop
+    while (i < MAX)
+    {
+        printf("\n####################################\n");
+        printf("     %s Audition Candidate Data Entry\n", group_name);
+        printf("####################################\n");
+        printf("Entering information for candidate #%d.\n", i + 1);
+        printf("---------------------------------\n");
+
+        printf("1. Name: ");
+        scanf(" %[^\n]", member_info[i][0]);
+
+        printf("2. Date of Birth (YYYY/MM/DD): ");
+        scanf(" %[^\n]", member_info[i][1]);
+
+        printf("3. Gender (M/F): ");
+        scanf(" %[^\n]", member_info[i][2]);
+
+        printf("4. Email: ");
+        scanf(" %[^\n]", member_info[i][3]);
+
+        printf("5. Nationality: ");
+        scanf(" %[^\n]", member_info[i][4]);
+
+        printf("6. BMI: ");
+        scanf(" %[^\n]", member_info[i][5]);
+
+        printf("7. Primary Skill: ");
+        scanf(" %[^\n]", member_info[i][6]);
+
+        printf("8. Secondary Skill: ");
+        scanf(" %[^\n]", member_info[i][7]);
+
+        printf("9. Korean Proficiency Level (TOPIK): ");
+        scanf(" %[^\n]", member_info[i][8]);
+
+        printf("10. MBTI: ");
+        scanf(" %[^\n]", member_info[i][9]);
+
+        printf("11. Introduction: ");
+        scanf(" %[^\n]", member_info[i][10]);
+
+        i++;
+    }
+
+    // Display section using for loop
+    printf("\n####################################\n");
+    printf("     %s Audition Candidate Data Review\n", group_name);
+    printf("####################################\n");
+
+    printf("===========================================================================================================\n");
+    printf("Name           | Age | DOB       | Gender | Email                | Nationality    | BMI  | Primary Skill | Secondary Skill      | TOPIK  | MBTI\n");
+    printf("===========================================================================================================\n");
+
+    for (i = 0; i < MAX; i++)
+    {
+        int birth_year = 0;
+        int age = 0;
+        sscanf(member_info[i][1], "%4d", &birth_year);
+        age = 2025 - birth_year;
+
+        // Convert TOPIK level to Korean descriptor
+        char *topik;
+        if (member_info[i][8][0] == '0') topik = "Native";
+        else if (member_info[i][8][0] == '1') topik = "Beginner";
+        else if (member_info[i][8][0] == '2') topik = "Intermediate";
+        else if (member_info[i][8][0] == '3') topik = "Upper-Intermediate";
+        else if (member_info[i][8][0] == '4') topik = "Advanced";
+        else topik = "Unknown";
+
+        // Print table row
+        printf("%-14s | %3d | %-9s | %-6s | %-20s | %-14s | %-4s | %-13s | %-19s | %-7s | %-5s\n",
+               member_info[i][0], age, member_info[i][1], member_info[i][2],
+               member_info[i][3], member_info[i][4], member_info[i][5],
+               member_info[i][6], member_info[i][7], topik, member_info[i][9]);
+
+        // Print introduction
+        printf("---------------------------------------------------------------------------------------------\n");
+        printf("%s\n", member_info[i][10]);
+        printf("---------------------------------------------------------------------------------------------\n");
+    }
+
+    return 0;
+}

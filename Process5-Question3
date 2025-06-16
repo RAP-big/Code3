@@ -1,0 +1,136 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX_NOTES 3
+
+// --- Structures ---
+typedef struct {
+    char note;      // A to G
+    int octave;     // 1 to 8
+} Note;
+
+typedef struct {
+    Note notes[MAX_NOTES];
+    int note_count;
+} Chord;
+
+// --- Helper Functions ---
+
+// Convert note character to scale index (A=0, B=1, ..., G=6)
+int noteToIndex(char n) {
+    switch (toupper(n)) {
+        case 'A': return 0;
+        case 'B': return 1;
+        case 'C': return 2;
+        case 'D': return 3;
+        case 'E': return 4;
+        case 'F': return 5;
+        case 'G': return 6;
+        default: return -1;
+    }
+}
+
+// Check if the note is valid
+int isValidNote(char note) {
+    return (toupper(note) >= 'A' && toupper(note) <= 'G');
+}
+
+// Check if the octave is valid
+int isValidOctave(int octave) {
+    return (octave >= 1 && octave <= 8);
+}
+
+// Check for note duplication within a chord
+int hasDuplicateNotes(Chord *chord) {
+    for (int i = 0; i < chord->note_count; i++) {
+        for (int j = i + 1; j < chord->note_count; j++) {
+            if (chord->notes[i].note == chord->notes[j].note &&
+                chord->notes[i].octave == chord->notes[j].octave) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// Check if notes are in the same octave (octave match)
+int isOctaveMatched(Chord *chord) {
+    int octave = chord->notes[0].octave;
+    for (int i = 1; i < chord->note_count; i++) {
+        if (chord->notes[i].octave != octave) return 0;
+    }
+    return 1;
+}
+
+// (Bonus) Check harmony: the pitch intervals between notes should not exceed 4 steps
+int isHarmonious(Chord *chord) {
+    for (int i = 0; i < chord->note_count - 1; i++) {
+        int idx1 = noteToIndex(chord->notes[i].note);
+        int idx2 = noteToIndex(chord->notes[i + 1].note);
+        int interval = abs((chord->notes[i + 1].octave * 7 + idx2) - (chord->notes[i].octave * 7 + idx1));
+        if (interval > 4) return 0;
+    }
+    return 1;
+}
+
+// Print the chord
+void printChord(Chord *chord) {
+    printf("\n🎵 Chord Information:\n");
+    for (int i = 0; i < chord->note_count; i++) {
+        printf("Note %d: %c%d\n", i + 1, toupper(chord->notes[i].note), chord->notes[i].octave);
+    }
+    if (hasDuplicateNotes(chord)) {
+        printf("⚠️ Duplicate note(s) found!\n");
+    } else {
+        printf("✅ No duplicate notes.\n");
+    }
+
+    if (isOctaveMatched(chord)) {
+        printf("✅ All notes in the same octave.\n");
+    } else {
+        printf("⚠️ Notes are in different octaves.\n");
+    }
+
+    if (isHarmonious(chord)) {
+        printf("🎶 This chord is harmonious.\n");
+    } else {
+        printf("🎶 This chord is not harmonious.\n");
+    }
+}
+
+// --- Main Feature Function ---
+void learnMusicTheory() {
+    Chord chord;
+    chord.note_count = 0;
+
+    printf("\n[II. Training > 4. Vocal Training > C. Music Theory]\n");
+    printf("🎼 Enter 3 notes to build a chord (Note: A~G, Octave: 1~8)\n");
+
+    for (int i = 0; i < MAX_NOTES; i++) {
+        char n;
+        int o;
+
+        printf("Enter note %d (format e.g. C 4): ", i + 1);
+        scanf(" %c %d", &n, &o);
+
+        if (!isValidNote(n) || !isValidOctave(o)) {
+            printf("❌ Invalid input. Note must be A~G, Octave must be 1~8.\n");
+            i--; // Retry current note
+            continue;
+        }
+
+        chord.notes[i].note = toupper(n);
+        chord.notes[i].octave = o;
+        chord.note_count++;
+    }
+
+    printChord(&chord);
+}
+
+// --- Main ---
+int main() {
+    learnMusicTheory();
+    return 0;
+}

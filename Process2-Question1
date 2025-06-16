@@ -1,0 +1,153 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define STAGES 8
+
+// Function prototypes
+void show_main_menu();
+void show_training_menu(char training_results[]);
+void clear_input_buffer();
+
+int main(void)
+{
+    char choice[10];
+    char training_results[STAGES] = {'-', '-', '-', '-', '-', '-', '-', '-'};
+
+    while (1)
+    {
+        show_main_menu();
+        printf("Enter your choice (or Q to quit): ");
+        fgets(choice, sizeof(choice), stdin);
+        choice[strcspn(choice, "\n")] = '\0';
+
+        if (strlen(choice) == 0 || choice[0] == '0' || choice[0] == 'q' || choice[0] == 'Q')
+        {
+            printf("Exiting program...\n");
+            break;
+        }
+
+        if (strcmp(choice, "1") == 0)
+        {
+            printf("[Audition Management] is selected. (Feature not implemented yet.)\n\n");
+        }
+        else if (strcmp(choice, "2") == 0)
+        {
+            show_training_menu(training_results);
+        }
+        else if (strcmp(choice, "3") == 0)
+        {
+            printf("[Debut] is selected. (Feature not implemented yet.)\n\n");
+        }
+        else
+        {
+            printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+void show_main_menu()
+{
+    printf("===================================\n");
+    printf("        Magrathea Main Menu        \n");
+    printf("===================================\n");
+    printf("1. Audition Management\n");
+    printf("2. Training\n");
+    printf("3. Debut\n");
+    printf("===================================\n");
+}
+
+void show_training_menu(char training_results[])
+{
+    int i;
+    char input[10];
+    char confirm;
+    char result;
+    const char *stage_names[STAGES] = {
+        "Physical Strength & Knowledge",
+        "Self-Management & Teamwork",
+        "Language & Pronunciation",
+        "Vocal",
+        "Dance",
+        "Visual & Image",
+        "Acting & Stage Performance",
+        "Fan Communication"
+    };
+
+    while (1)
+    {
+        printf("\n====================================\n");
+        printf("         8-Step Training Menu        \n");
+        printf("====================================\n");
+        for (i = 0; i < STAGES; i++)
+        {
+            printf("%d. %s [%c]\n", i + 1, stage_names[i], training_results[i]);
+        }
+        printf("0. Return to Main Menu\n");
+        printf("====================================\n");
+        printf("Select a training stage (1-8): ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = '\0';
+
+        if (strlen(input) == 0 || input[0] == '0')
+        {
+            printf("Returning to Main Menu...\n\n");
+            break;
+        }
+
+        int stage = atoi(input);
+        if (stage < 1 || stage > STAGES)
+        {
+            printf("Invalid stage. Try again.\n");
+            continue;
+        }
+
+        if (training_results[stage - 1] == 'P')
+        {
+            printf("Stage %d already passed. Cannot re-select.\n", stage);
+            continue;
+        }
+
+        // Enforce sequential rules
+        if ((stage == 2 && training_results[0] != 'P') ||
+            (stage >= 3 && (training_results[0] != 'P' || training_results[1] != 'P')))
+        {
+            printf("You must complete previous required stages before accessing this one.\n");
+            continue;
+        }
+
+        printf("Would you like to enter the evaluation result for Stage %d? (Y/N): ", stage);
+        scanf(" %c", &confirm);
+        clear_input_buffer();
+
+        if (confirm == 'Y' || confirm == 'y')
+        {
+            printf("Did you complete the training and pass the certification? (P/F): ");
+            scanf(" %c", &result);
+            clear_input_buffer();
+
+            if (result == 'P' || result == 'F')
+            {
+                training_results[stage - 1] = result;
+                printf("Result saved for Stage %d.\n", stage);
+            }
+            else
+            {
+                printf("Invalid result. Must be P or F.\n");
+            }
+        }
+        else
+        {
+            printf("Returning to training menu.\n");
+        }
+    }
+}
+
+void clear_input_buffer()
+{
+    while (getchar() != '\n')
+        ; // Clear leftover input
+}
+return 0

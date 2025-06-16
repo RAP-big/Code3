@@ -1,0 +1,44 @@
+#include <stdio.h>
+
+int main(void)
+{
+    // Declare constants and variables
+    const int MAX_STUDENTS = 5;
+    int scores[MAX_STUDENTS];
+    int i;
+    int total = 0;
+    float average;
+
+    // Introduction message
+    printf("Welcome to Cody Enter's Grade Calculator!\n");
+    printf("Enter the scores for %d students:\n", MAX_STUDENTS);
+
+    // Input student scores
+    for (i = 0; i < MAX_STUDENTS; i++)
+    {
+        printf("Enter score for student %d: ", i + 1);
+        scanf("%d", &scores[i]);
+    }
+
+    // Calculate total and average
+    for (i = 0; i < MAX_STUDENTS; i++)
+    {
+        total += scores[i];
+    }
+
+    average = (float) total / MAX_STUDENTS;
+
+    // Output results
+    printf("\nTotal Score: %d\n", total);
+    printf("Average Score: %.2f\n", average);
+
+    // Basic conditional logic
+    if (average >= 90)
+    {
+        printf("Excellent performance by the team!\n");
+    }
+    else if (average >= 70)
+    {
+        printf("Good job! Let’s keep improving.\n");
+    }
+    e

@@ -1,0 +1,110 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_NAME_LENGTH 50
+#define MAX_ATTEMPTS 3
+#define NUM_CONSONANTS 14
+#define NUM_VOWELS 10
+
+// Structure to store Hangul Jamo information
+typedef struct {
+    char hangul[3];           // Hangul character
+    char english[3];          // English alphabet
+    char pronunciation[50];   // English pronunciation
+} HangulJamo;
+
+// Structure to store flashcard game results
+typedef struct {
+    char name[MAX_NAME_LENGTH];
+    char challengeType[3];
+    int totalScore;
+    int attemptCount;
+} FlashcardResult;
+
+// Global array of Hangul consonants and vowels
+HangulJamo consonants[NUM_CONSONANTS] = {
+    {"ㄱ", "g", "giyeok"}, {"ㄴ", "n", "nieun"}, {"ㄷ", "d", "digeut"}, {"ㄹ", "r", "rieul"},
+    {"ㅁ", "m", "mieum"}, {"ㅂ", "b", "bieup"}, {"ㅅ", "s", "siot"}, {"ㅇ", "ng", "ieung"},
+    {"ㅈ", "j", "jieut"}, {"ㅊ", "ch", "chieut"}, {"ㅋ", "k", "kieuk"}, {"ㅌ", "t", "tieut"},
+    {"ㅍ", "p", "pieup"}, {"ㅎ", "h", "hieut"}
+};
+
+HangulJamo vowels[NUM_VOWELS] = {
+    {"ㅏ", "a", "a"}, {"ㅐ", "ae", "ae"}, {"ㅑ", "ya", "ya"}, {"ㅒ", "yae", "yae"},
+    {"ㅓ", "eo", "eo"}, {"ㅔ", "e", "e"}, {"ㅕ", "yeo", "yeo"}, {"ㅖ", "ye", "ye"},
+    {"ㅗ", "o", "o"}, {"ㅘ", "wa", "wa"}
+};
+
+// Function to display the main menu
+void displayMenu() {
+    printf("\nHangul Jamo Learning System\n");
+    printf("1. Hangul to English\n");
+    printf("2. English to Hangul\n");
+    printf("3. View Results\n");
+    printf("4. Exit\n");
+    printf("Enter your choice: ");
+}
+
+// Function to play the Hangul to English game
+void playKor2EngGame(FlashcardResult *result) {
+    printf("\n--- Hangul to English Game ---\n");
+    // Implement the game logic here
+    // Update the result->totalScore based on the user's performance
+}
+
+// Function to play the English to Hangul game
+void playEng2KorGame(FlashcardResult *result) {
+    printf("\n--- English to Hangul Game ---\n");
+    // Implement the game logic here
+    // Update the result->totalScore based on the user's performance
+}
+
+// Function to view the results
+void showResult(FlashcardResult *result) {
+    printf("\n--- Game Results ---\n");
+    printf("Name: %s\n", result->name);
+    printf("Challenge Type: %s\n", result->challengeType);
+    printf("Total Score: %d\n", result->totalScore);
+    printf("Attempt Count: %d\n", result->attemptCount);
+}
+
+// Main function
+int main() {
+    FlashcardResult result;
+    int choice;
+
+    printf("Enter your name: ");
+    fgets(result.name, MAX_NAME_LENGTH, stdin);
+    result.name[strcspn(result.name, "\n")] = '\0';  // Remove newline character
+
+    result.totalScore = 0;
+    result.attemptCount = 0;
+
+    while (1) {
+        displayMenu();
+        scanf("%d", &choice);
+        getchar();  // Consume newline character left by scanf
+
+        switch (choice) {
+            case 1:
+                strcpy(result.challengeType, "KE");
+                playKor2EngGame(&result);
+                break;
+            case 2:
+                strcpy(result.challengeType, "EK");
+                playEng2KorGame(&result);
+                break;
+            case 3:
+                showResult(&result);
+                break;
+            case 4:
+                printf("Exiting the program.\n");
+                return 0;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}

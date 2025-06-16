@@ -1,0 +1,187 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+#define NUM_QUESTIONS 10
+#define NUM_TRAINEES 4
+#define PASS_SCORE 80
+
+// Structure to store Korean quiz questions and answers
+typedef struct {
+    int id;
+    char question[100];
+    char correct_answer[100];
+} KoreanQuestion;
+
+// Structure to store trainee information
+typedef struct {
+    char name[50];
+    char nickname[50];
+    char nationality[50];
+    int quiz_score;
+    int passed;
+} Trainee;
+
+// Structure to store quiz answers
+typedef struct {
+    int question_id;
+    char answer[100];
+} QuizAnswer;
+
+// Function prototypes
+void initialize_questions(KoreanQuestion questions[]);
+void initialize_trainees(Trainee trainees[]);
+void testKoreanLang(Trainee trainees[], KoreanQuestion questions[]);
+void selectRandomTakers(Trainee trainees[], int *selected_index);
+void serveRandomQuiz(KoreanQuestion questions[], QuizAnswer answers[], int *score);
+int isAnswer(int question_id, const char *answer, KoreanQuestion questions[]);
+void display_results(Trainee trainee, QuizAnswer answers[], int score);
+
+int main() {
+    KoreanQuestion questions[NUM_QUESTIONS];
+    Trainee trainees[NUM_TRAINEES];
+    QuizAnswer answers[NUM_QUESTIONS];
+    int selected_index;
+
+    // Initialize questions and trainees
+    initialize_questions(questions);
+    initialize_trainees(trainees);
+
+    // Start the Korean language proficiency test
+    testKoreanLang(trainees, questions);
+
+    return 0;
+}
+
+void initialize_questions(KoreanQuestion questions[]) {
+    // Initialize the question bank with 10 English questions and their corresponding Korean answers
+    const char *questions_text[NUM_QUESTIONS] = {
+        "What is your name?",
+        "How old are you?",
+        "Where are you from?",
+        "What is your favorite food?",
+        "What is your hobby?",
+        "Do you like music?",
+        "What is your favorite color?",
+        "Do you have any pets?",
+        "What is your favorite season?",
+        "What is your dream job?"
+    };
+
+    const char *answers_text[NUM_QUESTIONS] = {
+        "이름은 무엇입니까?",
+        "몇 살입니까?",
+        "어디에서 왔습니까?",
+        "가장 좋아하는 음식은 무엇입니까?",
+        "취미는 무엇입니까?",
+        "음악을 좋아합니까?",
+        "가장 좋아하는 색깔은 무엇입니까?",
+        "애완동물이 있습니까?",
+        "가장 좋아하는 계절은 무엇입니까?",
+        "꿈의 직업은 무엇입니까?"
+    };
+
+    for (int i = 0; i < NUM_QUESTIONS; i++) {
+        questions[i].id = i + 1;
+        snprintf(questions[i].question, sizeof(questions[i].question), "%s", questions_text[i]);
+        snprintf(questions[i].correct_answer, sizeof(questions[i].correct_answer), "%s", answers_text[i]);
+    }
+}
+
+void initialize_trainees(Trainee trainees[]) {
+    // Initialize trainees with sample data
+    const char *names[NUM_TRAINEES] = {"John Doe", "Jane Smith", "Park Ji-yeon", "Lee Min-ho"};
+    const char *nicknames[NUM_TRAINEES] = {"John", "Jane", "Ji-yeon", "Min-ho"};
+    const char *nationalities[NUM_TRAINEES] = {"USA", "UK", "Korea", "Korea"};
+
+    for (int i = 0; i < NUM_TRAINEES; i++) {
+        snprintf(trainees[i].name, sizeof(trainees[i].name), "%s", names[i]);
+        snprintf(trainees[i].nickname, sizeof(trainees[i].nickname), "%s", nicknames[i]);
+        snprintf(trainees[i].nationality, sizeof(trainees[i].nationality), "%s", nationalities[i]);
+        trainees[i].quiz_score = 0;
+        trainees[i].passed = 0;
+    }
+}
+
+void testKoreanLang(Trainee trainees[], KoreanQuestion questions[]) {
+    int selected_index;
+    QuizAnswer answers[NUM_QUESTIONS];
+    int score;
+
+    // Select a random trainee for the quiz
+    selectRandomTakers(trainees, &selected_index);
+
+    // Check if the selected trainee is Korean
+    if (strcmp(trainees[selected_index].nationality, "Korea") == 0) {
+        printf("Trainee %s is Korean and cannot take the quiz.\n", trainees[selected_index].nickname);
+        return;
+    }
+
+    // Welcome the selected trainee
+    printf("Welcome, %s, to the Korean quiz session!\n", trainees[selected_index].nickname);
+
+    // Serve the quiz and calculate the score
+    serveRandomQuiz(questions, answers, &score);
+
+    // Store the quiz score and pass status
+    trainees[selected_index].quiz_score = score;
+    trainees[selected_index].passed = (score >= PASS_SCORE) ? 1 : 0;
+
+    // Display the results
+    display_results(trainees[selected_index], answers, score);
+}
+
+void selectRandomTakers(Trainee trainees[], int *selected_index) {
+    srand(time(NULL));
+    *selected_index = rand() % NUM_TRAINEES;
+}
+
+void serveRandomQuiz(KoreanQuestion questions[], QuizAnswer answers[], int *score) {
+    int asked[NUM_QUESTIONS] = {0};
+    int question_count = 5;
+    int correct_answers = 0;
+
+    // Ask 5 random questions
+    for (int i = 0; i < question_count; i++) {
+        int qid;
+        do {
+            qid = rand() % NUM_QUESTIONS;
+        } while (asked[qid]);
+        asked[qid] = 1;
+
+        printf("Question %d: %s\n", questions[qid].id, questions[qid].question);
+        printf("Your answer: ");
+        fgets(answers[i].answer, sizeof(answers[i].answer), stdin);
+        answers[i].answer[strcspn(answers[i].answer, "\n")] = '\0'; // Remove newline character
+
+        // Check if the answer is correct
+        if (isAnswer(questions[qid].id, answers[i].answer, questions)) {
+            correct_answers++;
+        }
+    }
+
+    // Calculate the score
+    *score = correct_answers * 20;
+}
+
+int isAnswer(int question_id, const char *answer, KoreanQuestion questions[]) {
+    // Check if the answer matches the correct answer
+    for (int i = 0; i < NUM_QUESTIONS; i++) {
+        if (questions[i].id == question_id) {
+            return (strcmp(answer, questions[i].correct_answer) == 0);
+        }
+    }
+    return 0;
+}
+
+void display_results(Trainee trainee, QuizAnswer answers[], int score) {
+    printf("\nAnswer Sheet for %s (%s):\n", trainee.nickname, trainee.name);
+    for (int i = 0; i < NUM_QUESTIONS; i++) {
+        if (strcmp(answers[i].answer, "") != 0) {
+            printf("Q%d: %s\n", i + 1, answers[i].answer);
+        }
+    }
+    printf("Total Score: %d\n", score);
+    printf("Pass Status: %s\n", (trainee.passed) ? "Passed" : "Failed");
+}
